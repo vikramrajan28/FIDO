@@ -2,44 +2,40 @@
 <html>
 <head>
     <title></title>
+	
     <link rel="stylesheet" href="css/milligram.min.css">
+	<link rel="stylesheet" href="css/add.css">
     <style>
         html, body, .container, .row {
             height: 100%;
+			background: #e8e8e8;
         }
 
-        .formcontainer {
-            background: #f0f0f0;
-            padding: 15px;
-        }
-
-        .formcontainer form, .formcontainer fieldset{
-            margin:0;
-        }
-
-        .secretcontainer {
-            background: #f0f0f0;
-            padding: 15px;
-        }
-
-        #registerContainer, #mainContainer {
-            display: none;
-        }
+		
     </style>
 </head>
 <body>
     <div class="container">
+		<div class="headercontainer" >
+			<h1 style="text-align: center;">FIDO IMPLEMENTATION</h1>
+			<h2 class="" style="text-align: center;">
+			  <img src="img/MQ-Logo.png" class="image">
+			</h2>
+		</div>		
+		<div class="clear"></div>
         <div class="row row-center">
 
             <div class="column" id="registerContainer">
                 <div class="formcontainer register">
-                    <h3>Register page</h3>
+                    <h3>Sign Up</h3>
                     <form id="register">
                       <fieldset>
-                        <label for="name">name</label>
+                        <label for="name">Name</label>
                         <input type="text" name="name">
-                        <label for="username">username</label>
+                        <label for="username">Username</label>
                         <input type="text" name="username">
+						<label for="password">Password</label>
+                        <input type="password" name="password">
 
                         <input class="button-primary" type="submit" value="Register">
                       </fieldset>
@@ -51,11 +47,13 @@
 
             <div class="column" id="loginContainer">
                 <div class="formcontainer login">
-                    <h3>Login page</h3>
+                    <h3>Sign In</h3>
                     <form id="login">
                       <fieldset>
-                        <label for="username">username</label>
+                        <label for="username">Username</label>
                         <input type="text" name="username">
+						<label for="password">Password</label>
+                        <input type="password" name="password">
 
                         <input class="button-primary" type="submit" value="Login">
                       </fieldset>
@@ -67,10 +65,30 @@
 
             <div class="column" id="mainContainer">
 
-                <div class="secretcontainer">
-                    <h3>Hey <span id="name"></span>!</h3>
-                    <div id="theSecret"></div>
-                    <button id="logoutButton">Logout</button>
+                <div class="secretcontainer home">
+                    <div id="theSecret">
+						<div class="tab">
+						  <button class="tablinks" onclick="opentab(event, 'home')">Home</button>
+						  <button class="tablinks" onclick="opentab(event, 'payment')">Payment</button>
+						  <button class="tablinks" onclick="opentab(event, 'logout')">Log Out</button>
+						</div>
+
+						<div id="home" class="tabcontent">
+						  <h3>About Project</h3>
+						  <p>Will be done later.</p>
+						</div>
+
+						<div id="payment" class="tabcontent">
+						  <h3>Demo Payment</h3>
+						  <div>
+						  </div> 
+						</div>
+
+						<div id="logout" class="tabcontent">
+						  <h3>Are you sure to logout?</h3>
+						  <button id="logoutButton">Logout</button>
+						</div>
+					</div>
                 </div>
             </div>
 
@@ -91,6 +109,20 @@
                     return loadMainContainer()
             })
         })
+		function opentab(evt, cityName) {
+		  var i, tabcontent, tablinks;
+		  tabcontent = document.getElementsByClassName("tabcontent");
+		  
+		  for (i = 0; i < tabcontent.length; i++) {
+			tabcontent[i].style.display = "none";
+		  }
+		  tablinks = document.getElementsByClassName("tablinks");
+		  for (i = 0; i < tablinks.length; i++) {
+			tablinks[i].className = tablinks[i].className.replace(" active", "");
+		  }
+		  document.getElementById(cityName).style.display = "block";
+		  evt.currentTarget.className += " active";
+		}
     </script>
 </body>
 </html>
