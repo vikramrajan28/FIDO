@@ -11,7 +11,6 @@ $('#register').submit(function(event) {
         alert('Name or username is missing!')
         return
     }
-	
     getMakeCredentialsChallenge({username, name})
         .then((response) => {
             let publicKey = preformatMakeCredReq(response);
@@ -51,7 +50,7 @@ let getMakeCredentialsChallenge = (formBody) => {
 }
 
 let sendWebAuthnResponse = (body) => {
-	alert(1);
+	
     return fetch('/webauthn/response', {
         method: 'POST',
         credentials: 'include',
@@ -62,7 +61,6 @@ let sendWebAuthnResponse = (body) => {
     })
     .then((response) => response.json())
     .then((response) => {
-		alert(2);
         if(response.status !== 'ok')
             throw new Error(`Server responed with error. The message is: ${response.message}`);
 
@@ -73,26 +71,24 @@ let sendWebAuthnResponse = (body) => {
 /* Handle for login form submission */
 $('#login').submit(function(event) {
     event.preventDefault();
-	alert(1);
     let username = this.username.value;
 
     if(!username) {
         alert('Username is missing!')
         return
     }
-	alert(2);
     getGetAssertionChallenge({username})
-        .then((response) => {alert(3);
+        .then((response) => {
             let publicKey = preformatGetAssertReq(response);
 			let pk = JSON.stringify(publicKey);
 			console.log("Public key :" + pk);
             return navigator.credentials.get({ publicKey })
         })
-        .then((response) => {alert(4);
+        .then((response) => {
             let getAssertionResponse = publicKeyCredentialToJSON(response);
             return sendWebAuthnResponse(getAssertionResponse)
         })
-        .then((response) => {alert(5);
+        .then((response) => {
             if(response.status === 'ok') {
                 loadMainContainer()   
             } else {
@@ -119,3 +115,50 @@ let getGetAssertionChallenge = (formBody) => {
         return response
     })
 }
+
+/*-----------Payment--------*/
+$('#paynow').click(function(event) {
+    event.preventDefault();
+
+    let customerName = "Oliver";
+    let customerReference     = "Arrow";    
+	let paymentAmount     = 100.00;
+    let redirectUrl     = "Google";
+    let mode     = 0;
+    let apikey     = "XXXX";
+
+    if(!customerName || !paymentAmount) {
+        alert('Name or Amount is missing!')
+        return
+    }
+    fetchpayment({customerName,customerReference,paymentAmount,redirectUrl,mode,apikey})
+        .then((response) => {
+			if(response.status === 'Success') {
+				$('#paynow').hide();
+			}
+			else {
+				alert(`Server responed with error. The message is: ${response.message}`);
+			}
+		})
+		.catch((error) => alert(error))
+
+})
+let fetchpayment = (formBody) => {
+    return fetch('/webauthn/payment', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formBody)
+    })
+    .then((response) => response.json())
+    .then((response) => {
+        if(response.status !== 'Success' )
+            throw new Error(`Server responed with error. The message is: ${response.message}`);
+
+        return response
+    })
+}
+/*---------Pay End------------*/
+

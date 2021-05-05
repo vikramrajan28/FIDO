@@ -1,0 +1,103 @@
+/*
+ *  Usage:
+ *
+ *    <div class="zp-spinner zp-spinner-rotating-plane"></div>
+ *
+ */
+.zp-spinner-rotating-plane.zp-spinner {
+  width: 30px;
+  height: 30px;
+  background-color: #1ab394;
+  margin: 0 auto;
+  -webkit-animation: zp-rotatePlane 1.2s infinite ease-in-out;
+  animation: zp-rotatePlane 1.2s infinite ease-in-out;
+}
+@-webkit-keyframes zp-rotatePlane {
+  0% {
+    -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+  }
+  100% {
+    -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}
+@keyframes zp-rotatePlane {
+  0% {
+    -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+  }
+  100% {
+    -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+  }
+}
+/*
+ *  Usage:
+ *
+ *    <div class="zp-spinner zp-spinner-double-bounce">
+ *      <div class="zp-double-bounce1"></div>
+ *      <div class="zp-double-bounce2"></div>
+ *    </div>
+ *
+ */
+.zp-spinner-double-bounce.zp-spinner {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  margin: 0 auto;
+}
+.zp-spinner-double-bounce .zp-double-bounce1,
+.zp-spinner-double-bounce .zp-double-bounce2 {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #1ab394;
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  -webkit-animation: zp-doubleBounce 2s infinite ease-in-out;
+  animation: zp-doubleBounce 2s infinite ease-in-out;
+}
+.zp-spinner-double-bounce .zp-double-bounce2 {
+  -webkit-animation-delay: -1s;
+  animation-delay: -1s;
+}
+@-webkit-keyframes zp-doubleBounce {
+  0%,
+  100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  50% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@keyframes zp-doubleBounce {
+  0%,
+  100% {
+    -webkit-transform: scale(0);
+    transform: scale(0);
+  }
+  50% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+.zp-text {
+  width: 260px;
+  height: auto;
+  position: relative;
+  margin: 0 auto;
+}

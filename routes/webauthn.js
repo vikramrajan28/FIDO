@@ -144,6 +144,41 @@ router.post('/login', (request, response) => {
 
     response.json(getAssertion)
 })
+/*--Payment-*/
+router.post('/payment', (request, response) => {
+    if(!request.body) {
+        response.json({
+            'status': 'failed',
+            'message': 'Request missing name or username field!'
+        })
+
+        return
+    }
+
+	let verified =true;
+    let customerName = request.body.customerName;
+    let customerReference     = request.body.customerReference;    
+	let paymentAmount     = request.body.paymentAmount;
+    let redirectUrl     = request.body.redirectUrl;
+    let mode     = request.body.mode;
+    let apikey     = request.body.apikey;
+	console.info("Payment : "+ customerName)
+	/*---code for null check*/
+	/*--end null check--*/
+	
+    if(!verified) {
+        response.json({
+            'status': 'failed',
+            'message': `Invalid Payment Request`
+        })
+
+        return
+    }else{
+		response.json({
+            'status': 'Success',
+        })
+	}
+})
 /* ---------- ROUTES END ---------- */
 
 module.exports = router;

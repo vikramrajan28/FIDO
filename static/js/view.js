@@ -27,6 +27,7 @@ let loadMainContainer = () => {
                 $('#loginContainer').hide();
                 $('#mainContainer').show();
 				$('#home').show()
+				$('#sx').hide()// payment
             } else {
                 alert(`Error! ${response.message}`)
             }
