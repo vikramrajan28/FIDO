@@ -2,7 +2,7 @@ function getPValue(value) {
     return value === 'undefined' || value == null ? '' : value;
 }
 function openPayment(payment) {
-    var options = JSON.parse(payment);
+    let options = JSON.parse(payment);
     if (getPValue(options.apikey) === '')
         {
         alert("Payment plugin error: Not initialized.");
@@ -14,12 +14,6 @@ function openPayment(payment) {
         return;
     }
 
-    var queryString = '?CustomerName=' + getPValue(options.customerName);
-    queryString += '&CustomerReference=' + getPValue(options.customerReference);
-    queryString += '&PaymentAmount=' + getPValue(options.paymentAmount);
-    queryString += '&RedirectUrl=' + getPValue(options.redirectUrl);
-    queryString += '&Mode=' + getPValue(options.mode);
-    queryString += '&__ApiKey=' + options.apikey;
 	var iframeid = "payframe";
     var frame = $('<iframe>')
         .css('width', '100%')
