@@ -138,13 +138,42 @@ router.post('/login', (request, response) => {
 
     let getAssertion    = utils.generateServerGetAssertion(database[username].authenticators)
     getAssertion.status = 'ok'
-
+    console.log("Challenge: "+getAssertion.challenge);
     request.session.challenge = getAssertion.challenge;
     request.session.username  = username;
 
     response.json(getAssertion)
 })
 /*--Payment-*/
+router.post('/payConfirm', (request, response) => {
+    if(!request.body || !request.session.username) {
+        response.json({
+            'status': 'failed',
+            'message': 'Request missing username field!'
+        })
+
+        return
+    }
+
+    let username = request.session.username;
+
+    if(!database[username] || !database[username].registered) {
+        response.json({
+            'status': 'failed',
+            'message': `User ${username} not Valid!`
+        })
+
+        return
+    }
+
+    let getAssertion    = utils.generateServerGetAssertion(database[username].authenticators)
+    getAssertion.status = 'ok'
+
+    request.session.challenge = getAssertion.challenge;
+    request.session.username  = username;
+    console.log("Get Assert Pay: "+JSON.stringify(getAssertion));
+    response.json(getAssertion);
+})
 router.post('/payment', (request, response) => {
     if(!request.body) {
         response.json({
@@ -154,6 +183,7 @@ router.post('/payment', (request, response) => {
 
         return
     }
+
 
 	let verified =true;
     let customerName = request.body.customerName;

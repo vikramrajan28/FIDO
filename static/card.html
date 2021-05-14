@@ -124,7 +124,7 @@ span.price {
         </span>
       </h4>
       <hr>	
-	  <form id ="trandata">
+	  <form id ="trandata" >
 		<input type="hidden" id="customerName" value="">
 		<input type="hidden" id="customerReference" value="">
 		<input type="hidden" id="paymentAmount" value="">
@@ -136,6 +136,10 @@ span.price {
   </div>
   
 </div>
+<script src="js/jquery-3.6.0.min.js"></script>
+<script src="js/helpers.js"></script>
+<script src="js/base64url-arraybuffer.js"></script>
+<script src="js/webauthn.auth.js"></script>
 <script>
 function loaddata(options){
 		document.getElementById("customerName").value=options.customerName;
@@ -144,6 +148,58 @@ function loaddata(options){
 		document.getElementById("mode").value=options.mode;
 		document.getElementById("custName").textContent=options.customerName;
 		document.getElementById("payAmount").textContent=options.paymentAmount;
+}
+
+$('#trandata').submit(function (event) {
+    alert("Hi");
+    event.preventDefault();
+    let customerName = this.customerName.value;
+    let customerReference = this.customerReference.value;
+    let paymentAmount = this.paymentAmount.value;
+    let mode = this.mode.value;
+
+    if (!paymentAmount) {
+        alert('Payment Amount is missing!')
+        return
+    }
+    getGetPayAssertionChallenge({customerName, customerReference, paymentAmount, mode})
+        .then((response) => {
+            let publicKey = preformatGetAssertReq(response);
+            let pk = JSON.stringify(publicKey);
+            console.log("Public key :" + pk);
+            return navigator.credentials.get({publicKey})
+        })
+        .then((response) => {
+            let getAssertionResponse = publicKeyCredentialToJSON(response);
+            console.log("After WebAuthn Pay: "+JSON.stringify(response));
+            return sendWebAuthnResponse(getAssertionResponse)
+        })
+        .then((response) => {
+            if (response.status === 'ok') {
+                loadMainContainer()
+            } else {
+                alert(`Server responed with error. The message is: ${response.message}`);
+            }
+        })
+        .catch((error) => alert(error))
+});
+
+let getGetPayAssertionChallenge = (formBody) => {
+    return fetch('/webauthn/payConfirm', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formBody)
+    })
+        .then((response) => response.json())
+        .then((response) => {
+            if(response.status !== 'ok')
+                throw new Error(`Server responed with error. The message is: ${response.message}`);
+
+            return response
+        })
 }
 </script>
 </body>

@@ -31,17 +31,10 @@ function openPayment(payment) {
         .attr('scrolling', 'auto')
         .addClass('hide')
         .attr('src', options.url);//ajax
-/*
+
     $(frame).on('load', function () {
         $('.zp-status').hide();
-		alert(options.customerName);
-		document.getElementsByName("customerName").setAttribute('value',options.customerName);
-		document.getElementsByName("customerReference").value=options.customerReference;
-		document.getElementsByName("paymentAmount").value=options.paymentAmount;
-		document.getElementsByName("mode").value=options.mode;
-		document.getElementById("customerName").textContent=options.customerName;
-		document.getElementById("paymentAmount").textContent=options.paymentAmount;
-    });*/
+    });
 
     var modalHeaderTitle = $('<h4>')
         .addClass('modal-title')
