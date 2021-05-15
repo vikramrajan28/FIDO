@@ -80,8 +80,6 @@ $('#login').submit(function(event) {
     getGetAssertionChallenge({username})
         .then((response) => {
             let publicKey = preformatGetAssertReq(response);
-			let pk = JSON.stringify(publicKey);
-			console.log("Public key :" + pk);
             return navigator.credentials.get({ publicKey })
         })
         .then((response) => {

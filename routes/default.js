@@ -10,6 +10,7 @@ router.get('/isLoggedIn', (request, response) => {
             'status': 'failed'
         })
     } else {
+        console.log("Credentials: "+JSON.stringify(request.session));
         response.json({
             'status': 'ok'
         })

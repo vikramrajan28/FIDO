@@ -2,7 +2,7 @@ function getPValue(value) {
     return value === 'undefined' || value == null ? '' : value;
 }
 function openPayment(payment) {
-    var options = JSON.parse(payment);
+    let options = JSON.parse(payment);
     if (getPValue(options.apikey) === '')
         {
         alert("Payment plugin error: Not initialized.");
@@ -14,12 +14,6 @@ function openPayment(payment) {
         return;
     }
 
-    var queryString = '?CustomerName=' + getPValue(options.customerName);
-    queryString += '&CustomerReference=' + getPValue(options.customerReference);
-    queryString += '&PaymentAmount=' + getPValue(options.paymentAmount);
-    queryString += '&RedirectUrl=' + getPValue(options.redirectUrl);
-    queryString += '&Mode=' + getPValue(options.mode);
-    queryString += '&__ApiKey=' + options.apikey;
 	var iframeid = "payframe";
     var frame = $('<iframe>')
         .css('width', '100%')
@@ -31,17 +25,10 @@ function openPayment(payment) {
         .attr('scrolling', 'auto')
         .addClass('hide')
         .attr('src', options.url);//ajax
-/*
+
     $(frame).on('load', function () {
         $('.zp-status').hide();
-		alert(options.customerName);
-		document.getElementsByName("customerName").setAttribute('value',options.customerName);
-		document.getElementsByName("customerReference").value=options.customerReference;
-		document.getElementsByName("paymentAmount").value=options.paymentAmount;
-		document.getElementsByName("mode").value=options.mode;
-		document.getElementById("customerName").textContent=options.customerName;
-		document.getElementById("paymentAmount").textContent=options.paymentAmount;
-    });*/
+    });
 
     var modalHeaderTitle = $('<h4>')
         .addClass('modal-title')
