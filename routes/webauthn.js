@@ -4,6 +4,7 @@ const config    = require('../config.json');
 const base64url = require('base64url');
 const router    = express.Router();
 const database  = require('./db');
+const path  = require('path');
 
 /* ---------- ROUTES START ---------- */
 
@@ -174,6 +175,8 @@ router.post('/payConfirm', (request, response) => {
     console.log("Get Assert Pay: "+JSON.stringify(getAssertion));
     response.json(getAssertion);
 })
+
+
 router.post('/payment', (request, response) => {
     if(!request.body) {
         response.json({
@@ -208,6 +211,26 @@ router.post('/payment', (request, response) => {
             'status': 'Success',
         })
 	}
+})
+
+//----------------------
+
+router.post('/transaction/init', (request, response) => {
+    // SW calls this endpoint to send request data
+    // FIDO server has to save it in some database under transactionId (use something simple like https://www.npmjs.com/package/node-json-db)
+    // And transactionId is returned
+    response.json({
+        'url': "",
+    })
+})
+
+
+router.get('/transaction/:id/iframe.html', (request, response) => {
+    // Get data saved in the transaction init call
+    // Modify card.html with the data (you need to change card.html to be a simple template that you can modify dynamically)
+    // And you send html back
+    console.log("Transaction id: "+ request.param.id)
+    response.sendFile(path.join(__dirname + '/../static/card.html'));
 })
 /* ---------- ROUTES END ---------- */
 

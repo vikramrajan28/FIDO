@@ -3,10 +3,16 @@ self.addEventListener('fetch', function(event) {
 	var url = event.request.url.split('/');
 	if(url.includes("payment")){
 		event.respondWith(
-			sendInfoToBrowser(event).then(()=> {
-				console.log("Slept");
-				sleepFor(5000);
-			}).then(()=>fidoProcess(event))
+			sendRequestToFIDOServer(event)
+				.then(data => sendIframeInitToMainFrame(event,data))
+				.then(()=> waitForIframeAuthentication())
+				.then(()=>verifyFIDOAuthentication())
+				.then((body)=>buildFetchResponse(body))
+
+
+			// sendInfoToBrowser(event)
+			// 	.then(waitForIframeAuthentication)
+			// .then(()=>fidoProcess(event))
 		);
 	}else{
 		event.respondWith(
@@ -14,13 +20,65 @@ self.addEventListener('fetch', function(event) {
 	}
   
 });
-async function sendInfoToBrowser(event){
-	if (!event.clientId) return;
+
+async function sendRequestToFIDOServer(event){
+	// Take request body and send to FIDO server
+	// FIDO server will give you url that you will use to open iframe so change the line below
+	let url = "http://localhost:3000/webauthn/transaction/1234/iframe.html"
+	return Promise.resolve(url)
+}
+
+
+async function sendIframeInitToMainFrame(event,data){
+	return sendMessageToMainFrame(event,"FIDO_INIT_IFRAME",data)
+}
+
+async function waitForIframeAuthentication(){
+	// Check if iframe from main page sent complete message
+	// Sleep in loop and check if the mainframe sent a message about closing
+	console.log("No answer from iframe sleeping")
+	return sleep(10000)
+}
+
+async function verifyFIDOAuthentication(transactionId){
+	// Call FIDO server to check if FIDO verification was completed
+	// If yes FIDO server should execute call ot backend and return the body response to you
+	// If false FIDO server returns error status
+	return Promise.resolve({data:"mock data from response"})
+}
+
+async function buildFetchResponse(body){
+	let response = new Response(JSON.stringify(body), {
+		headers: {'Content-Type': 'application/json'}
+	});
+	return Promise.resolve(response)
+}
+
+async function sendMessageToMainFrame(event, type, data){
+	if (!event.clientId) {
+		return Promise.reject("clientID missing")
+	}
 	const client = await clients.get(event.clientId);
-	if (!client) return;
+	if (!client) {
+		return Promise.reject("client not found")
+	}
+	return client.postMessage({
+		msg: type,
+		data: data
+	});
+}
+
+async function sendInfoToBrowser(event){
+	if (!event.clientId) {
+		return Promise.reject("clientID missing")
+	}
+	const client = await clients.get(event.clientId);
+	if (!client) {
+		return Promise.reject("client not found")
+	}
 	console.log("Client ID : " + client);
 	//Step 1: Intercepting the request and sending post msg to open iframe
-	await fetchcritical(event.request).then(body => {
+	return fetchcritical(event.request).then(body => {
 		console.log("SW body : " + body.mode);
 		client.postMessage({
 			data: body,
@@ -56,6 +114,12 @@ function fetchcritical(request){
 		return JSON.stringify(payment);
 	});	
 	
+}
+
+function sleep(ms) {
+	return new Promise((resolve) => {
+		setTimeout(resolve, ms);
+	});
 }
 
 function sleepFor( sleepDuration ){

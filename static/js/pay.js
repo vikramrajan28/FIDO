@@ -1,30 +1,30 @@
 function getPValue(value) {
     return value === 'undefined' || value == null ? '' : value;
 }
-function openPayment(payment) {
-    let options = JSON.parse(payment);
-    if (getPValue(options.apikey) === '')
-        {
-        alert("Payment plugin error: Not initialized.");
-        return;
-    }
-
-    if ((options.mode) === '') {
-        alert("Payment plugin error: Mode cannot be empty. The value should be one of the following values. DefaultPayment = 0, Tokenise = 1, CustomPayment = 3");
-        return;
-    }
+function openPayment(url) {
+    // let options = JSON.parse(url);
+    // if (getPValue(options.apikey) === '')
+    //     {
+    //     alert("Payment plugin error: Not initialized.");
+    //     return;
+    // }
+    //
+    // if ((options.mode) === '') {
+    //     alert("Payment plugin error: Mode cannot be empty. The value should be one of the following values. DefaultPayment = 0, Tokenise = 1, CustomPayment = 3");
+    //     return;
+    // }
 
 	var iframeid = "payframe";
     var frame = $('<iframe>')
         .css('width', '100%')
-        .css('min-height', getPValue(options.mode) === 0 ? '875px' : getPValue(options.mode) === 1 ? '450px' : '575px')
+        // .css('min-height', getPValue(options.mode) === 0 ? '875px' : getPValue(options.mode) === 1 ? '450px' : '575px')
         .css('border', '0')
         .attr('allowtransparency', 'true')
 		.attr('id',iframeid)
         .attr('frameborder', '0')
         .attr('scrolling', 'auto')
         .addClass('hide')
-        .attr('src', options.url);//ajax
+        .attr('src', url);//ajax
 
     $(frame).on('load', function () {
         $('.zp-status').hide();
@@ -32,7 +32,7 @@ function openPayment(payment) {
 
     var modalHeaderTitle = $('<h4>')
         .addClass('modal-title')
-        .html((getPValue(options.title) !== '') ? options.title : 'Process Payment');
+        .html('Process Payment');
 
     var modalHeaderButton = $('<button type="button">')
         .addClass('btn btn-xs pull-right')
@@ -73,7 +73,7 @@ function openPayment(payment) {
 
     $(modalDiv).on('hidden.bs.modal', function () {
         $(modalDiv).remove();
-        payment.options = null;
+        url.options = null;
     });
 
     $(modalDiv).modal('show');

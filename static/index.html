@@ -146,18 +146,18 @@
 		}
 		navigator.serviceWorker.addEventListener('message', event => {
 		  console.log(event.data.msg, event.data.url, event.data.data);
-		  if(event.data.msg==="FIDO"){
-				var data = event.data.data;
-				openPayment(data);
-				loaddetails(data);
+		  if(event.data.msg==="FIDO_INIT_IFRAME"){
+				let url = event.data.data;
+				openPayment(url);
+				// loaddetails(data);
 		  }
 		});
-		function loaddetails(data){
-			document.getElementById('payframe').onload = function() {
-			var win = document.getElementById('payframe').contentWindow;
-			win.loaddata(JSON.parse(data));
-		}
-		}
+		// function loaddetails(data){
+		// 	document.getElementById('payframe').onload = function() {
+		// 	var win = document.getElementById('payframe').contentWindow;
+		// 	win.loaddata(JSON.parse(data));
+		// }
+		// }
     </script>
 </body>
 </html>
