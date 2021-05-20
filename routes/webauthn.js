@@ -5,6 +5,8 @@ const base64url = require('base64url');
 const router    = express.Router();
 const database  = require('./db');
 const path  = require('path');
+const fs = require('fs');
+
 
 /* ---------- ROUTES START ---------- */
 
@@ -215,23 +217,91 @@ router.post('/payment', (request, response) => {
 
 //----------------------
 
-router.post('/transaction/init', (request, response) => {
-    // SW calls this endpoint to send request data
-    // FIDO server has to save it in some database under transactionId (use something simple like https://www.npmjs.com/package/node-json-db)
-    // And transactionId is returned
-    response.json({
-        'url': "",
-    })
-})
-
-
-router.get('/transaction/:id/iframe.html', (request, response) => {
+router.get('/transaction', (request, response) => {
     // Get data saved in the transaction init call
+    if(!request.body) {
+        response.json({
+            'status': 'failed',
+            'message': 'Request missing name or username field!'
+        })
+
+        return
+    }
+    let username = request.session.username;
+    if(!database[username] || !database[username].registered) {
+        response.json({
+            'status': 'failed',
+            'message': `User ${username} not Valid!`
+        })
+        return
+    }
+    let verified =true;
+    let iframeurl = "card.html";
+    let customerName = request.body.customerName;
+    let customerReference     = request.body.customerReference;
+    let paymentAmount     = request.body.paymentAmount;
+    //let redirectUrl     = request.body.redirectUrl;
+    let mode     = request.body.mode;
+    let stat = 0;
+    let tranid  = Date.now()
+    console.info("Payment : "+ customerName + " Transact ID: "+ tranid);
+    console.info("Database : "+ JSON.stringify(database));
+    database[username].transaction = {
+        'tranid': tranid,
+        'customerName': customerName,
+        'customerReference': customerReference,
+        'mode': mode,
+        'paymentAmount':paymentAmount,
+        'status':stat
+    }
+        /*Html Rendering*/
+    let htmldata = '<div class="container">\n' +
+        '\t  <h4><b>Customer Name: </b><span id="custName" style="color:black"><b>'+customerName+'</b></span></h4>\n' +
+        '      <h4>Amount Due: \n' +
+        '        <span id="payAmount" style="color:black">\n' +
+        '          \n' +paymentAmount+
+        '        </span>\n' +
+        '      </h4>\n' +
+        '      <hr>\t\n' +
+        '\t  <form id ="trandata" >\n' +
+        '\t\t<input type="hidden" id="customerName" value="'+customerName+'">\n' +
+        '\t\t<input type="hidden" id="customerReference" value="'+customerReference+'">\n' +
+        '\t\t<input type="hidden" id="paymentAmount" value="'+paymentAmount+'">\n' +
+        '\t\t<input type="hidden" id="mode" value="'+mode+'">\n' +
+        '\t\t<input type="submit" id="payConfirm" value="Confirm">\n' +
+        '\t  </form>\n' +
+        '\t  \n' +
+        '    </div>';
+    console.info("HTML DATA : "+ htmldata);
+    let content ="";
+    fs.readFile('./card.html', function read(err, data) {
+        if (err) {
+            throw err;
+        }
+        content = String(data);
+        // Invoke the next step here however you like
+        console.log(content);   // Put all of the code here (not the best solution)
+        content.replace('<div class="container"></div>',htmldata);
+    });
+    if(!verified) {
+        response.json({
+            'status': 'failed',
+            'message': `Invalid Payment Request`
+        })
+
+        return
+    }else{
+        response.json({
+            'tranid': tranid,
+            'url': content
+        })
+    }
     // Modify card.html with the data (you need to change card.html to be a simple template that you can modify dynamically)
     // And you send html back
     console.log("Transaction id: "+ request.param.id)
     response.sendFile(path.join(__dirname + '/../static/card.html'));
 })
+
 /* ---------- ROUTES END ---------- */
 
 module.exports = router;

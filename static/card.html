@@ -109,30 +109,8 @@ span.price {
 </head>
 <body>
 <div class="row">
-<!--
-  <div class="col-75">
-    <div class="container">
-    </div>
-  </div>
--->
   <div id= "tdata" class="col-25">
-    <div class="container">
-	  <h4><b>Customer Name: </b><span id="custName" style="color:black"><b></b></span></h4>
-      <h4>Amount Due: 
-        <span id="payAmount" style="color:black">
-          
-        </span>
-      </h4>
-      <hr>	
-	  <form id ="trandata" >
-		<input type="hidden" id="customerName" value="">
-		<input type="hidden" id="customerReference" value="">
-		<input type="hidden" id="paymentAmount" value="">
-		<input type="hidden" id="mode" value="">
-		<input type="submit" id="payConfirm" value="Confirm">
-	  </form>
-	  
-    </div>
+    <div class="container"></div> <!--Dynamic html slot-->
   </div>
   
 </div>
@@ -142,14 +120,14 @@ span.price {
 <script src="/js/webauthn.auth.js"></script>
 <script>
 
-function loaddata(options){
+/*function loaddata(options){
 		document.getElementById("customerName").value=options.customerName;
 		document.getElementById("customerReference").value=options.customerReference;
 		document.getElementById("paymentAmount").value=options.paymentAmount;
 		document.getElementById("mode").value=options.mode;
 		document.getElementById("custName").textContent=options.customerName;
 		document.getElementById("payAmount").textContent=options.paymentAmount;
-}
+}*/
 
 $('#trandata').submit(function (event) {
     alert("Hi");

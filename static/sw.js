@@ -24,8 +24,28 @@ self.addEventListener('fetch', function(event) {
 async function sendRequestToFIDOServer(event){
 	// Take request body and send to FIDO server
 	// FIDO server will give you url that you will use to open iframe so change the line below
-	let url = "http://localhost:3000/webauthn/transaction/1234/iframe.html"
-	return Promise.resolve(url)
+	console.log(event.request.credentials);
+	return fetchcritical(event.request)
+		.then((data) => {
+			return fetch('http://localhost:3000/webauthn/transaction', {
+				method: 'POST',
+				credentials: 'include',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: data
+			}).then((response) => response.json())
+				.then((response) => {
+					if(!response.tranid ) {
+						console.info("Error Occured");
+						throw new Error(`Server responed with error. The message is: ${response.message}`);
+					}
+					return response
+				});
+		});
+
+	//let url = "http://localhost:3000/webauthn/transaction/1234/iframe.html"
+	//return Promise.resolve(url)
 }
 
 
