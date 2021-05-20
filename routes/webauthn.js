@@ -217,7 +217,7 @@ router.post('/payment', (request, response) => {
 
 //----------------------
 
-router.get('/transaction', (request, response) => {
+router.post('/transaction', (request, response) => {
     // Get data saved in the transaction init call
     if(!request.body) {
         response.json({

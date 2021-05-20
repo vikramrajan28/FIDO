@@ -27,10 +27,12 @@ async function sendRequestToFIDOServer(event){
 	console.log(event.request.credentials);
 	return fetchcritical(event.request)
 		.then((data) => {
+			console.log(data)
 			return fetch('http://localhost:3000/webauthn/transaction', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
+					'Accept': 'application/json',
 					'Content-Type': 'application/json'
 				},
 				body: data
@@ -123,7 +125,7 @@ function fetchcritical(request){
 		console.log("SW c : "+data.customerName);
 
 		var payment = {
-			url: 'card.html', 
+			url: "card.html",
 			apikey: data.apikey,
 			redirectUrl: data.redirectUrl, 
 			mode: data.mode,
