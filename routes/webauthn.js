@@ -157,7 +157,7 @@ router.post('/payConfirm', (request, response) => {
 
         return
     }
-
+    console.log("Pay Confirm: "+JSON.stringify(request.body));
     let username = request.session.username;
 
     if(!database[username] || !database[username].registered) {
@@ -168,8 +168,9 @@ router.post('/payConfirm', (request, response) => {
 
         return
     }
-
-    let getAssertion    = utils.generateServerGetAssertion(database[username].authenticators)
+    let tranhash = utils.transHashBuffer(JSON.stringify(request.body));
+    console.log("Hashed Data: "+tranhash);
+    let getAssertion    = utils.generateServerPayAssertion(database[username].authenticators,tranhash);
     getAssertion.status = 'ok'
 
     request.session.challenge = getAssertion.challenge;
@@ -217,8 +218,7 @@ router.post('/payment', (request, response) => {
 
 //----------------------
 
-router.post('/transaction', (request, response) => {
-    // Get data saved in the transaction init call
+router.get('/transaction/:id/card.html', (request, response) => {    // Get data saved in the transaction init call
     if(!request.body) {
         response.json({
             'status': 'failed',
@@ -228,32 +228,15 @@ router.post('/transaction', (request, response) => {
         return
     }
     let username = request.session.username;
-    if(!database[username] || !database[username].registered) {
-        response.json({
-            'status': 'failed',
-            'message': `User ${username} not Valid!`
-        })
-        return
-    }
-    let verified =true;
-    let iframeurl = "card.html";
-    let customerName = request.body.customerName;
-    let customerReference     = request.body.customerReference;
-    let paymentAmount     = request.body.paymentAmount;
+    console.log("Transaction id: "+ request.params.id);
+    let tranid =request.params.id;
+    let trandata = database[username].transaction
+    if (tranid != trandata.tranid) return
+    let customerName = trandata.customerName;
+    let customerReference     = trandata.customerReference;
+    let paymentAmount     = trandata.paymentAmount;
     //let redirectUrl     = request.body.redirectUrl;
-    let mode     = request.body.mode;
-    let stat = 0;
-    let tranid  = Date.now()
-    console.info("Payment : "+ customerName + " Transact ID: "+ tranid);
-    console.info("Database : "+ JSON.stringify(database));
-    database[username].transaction = {
-        'tranid': tranid,
-        'customerName': customerName,
-        'customerReference': customerReference,
-        'mode': mode,
-        'paymentAmount':paymentAmount,
-        'status':stat
-    }
+    let mode     = trandata.mode;
         /*Html Rendering*/
     let htmldata = '<div class="container">\n' +
         '\t  <h4><b>Customer Name: </b><span id="custName" style="color:black"><b>'+customerName+'</b></span></h4>\n' +
@@ -268,21 +251,68 @@ router.post('/transaction', (request, response) => {
         '\t\t<input type="hidden" id="customerReference" value="'+customerReference+'">\n' +
         '\t\t<input type="hidden" id="paymentAmount" value="'+paymentAmount+'">\n' +
         '\t\t<input type="hidden" id="mode" value="'+mode+'">\n' +
+        '\t\t<input type="hidden" id="tranid" value="'+tranid+'">\n' +
         '\t\t<input type="submit" id="payConfirm" value="Confirm">\n' +
         '\t  </form>\n' +
         '\t  \n' +
         '    </div>';
-    console.info("HTML DATA : "+ htmldata);
-    let content ="";
-    fs.readFile('./card.html', function read(err, data) {
+    fs.readFile('./static/card.html', function read(err, data) {
         if (err) {
             throw err;
         }
-        content = String(data);
-        // Invoke the next step here however you like
-        console.log(content);   // Put all of the code here (not the best solution)
-        content.replace('<div class="container"></div>',htmldata);
+        let $ = require('cheerio').load(data);
+        $('#bravo').replaceWith(htmldata);
+        fs.writeFile('routes/iframe_'+tranid+'.html', $.html(), function (err) {
+            if (err) return console.log(err);
+            console.log('Content > iframe.html');
+            response.sendFile(path.join(__dirname + '/iframe_'+tranid+'.html'));
+        });
     });
+    // Modify card.html with the data (you need to change card.html to be a simple template that you can modify dynamically)
+    // And you send html back
+
+})
+
+router.post('/transaction/init', (request, response) => {
+    // SW calls this endpoint to send request data
+    // FIDO server has to save it in some database under transactionId (use something simple like https://www.npmjs.com/package/node-json-db)
+    if(!request.body) {
+        response.json({
+            'status': 'failed',
+            'message': 'Request missing name or username field!'
+        })
+        return
+    }
+    let username = request.session.username;
+    console.log("Inside tran save: "+username);
+    if(!database[username] || !database[username].registered) {
+        response.json({
+            'status': 'failed',
+            'message': `User ${username} not Valid!`
+        })
+        return
+    }
+    let verified =true;
+    let customerName = request.body.customerName;
+    let customerReference     = request.body.customerReference;
+    let paymentAmount     = request.body.paymentAmount;
+    let redirectUrl     = request.body.redirectUrl;
+    let mode     = request.body.mode;
+    let apikey     = request.body.apikey;
+    let tranid  = Date.now()
+    let stat = 0;
+    console.info("Payment : "+ customerName + " Transact ID: "+ tranid);
+    console.info("Database : "+ JSON.stringify(database));
+    database[username].transaction = {
+        'tranid': tranid,
+        'customerName': customerName,
+        'customerReference': customerReference,
+        'mode': mode,
+        'paymentAmount':paymentAmount,
+        'status':stat,
+        'requestData':request.body
+    }
+    // And transactionId is returned
     if(!verified) {
         response.json({
             'status': 'failed',
@@ -291,17 +321,77 @@ router.post('/transaction', (request, response) => {
 
         return
     }else{
+        let iframeurl ="http://localhost:3000/webauthn/transaction/tranid/card.html"; //Constant
+        iframeurl = iframeurl.replace("tranid",tranid);
         response.json({
-            'tranid': tranid,
-            'url': content
+            'url': iframeurl,
+            'tranid':tranid
         })
     }
-    // Modify card.html with the data (you need to change card.html to be a simple template that you can modify dynamically)
-    // And you send html back
-    console.log("Transaction id: "+ request.param.id)
-    response.sendFile(path.join(__dirname + '/../static/card.html'));
 })
-
+router.post('/fidoUpdate', (request, response) => {
+    if(!request.body) {
+        response.json({
+            'status': 'failed',
+            'message': 'Request missing name or username field!'
+        })
+        return
+    }
+    let tranid = request.body.tranid;
+    let status = request.body.stats;
+    let username = request.session.username;
+    if(database[username].transaction.tranid != tranid) {
+        response.json({
+            'status': 'failed',
+            'message': `Invalid Transaction. Please Check!`
+        })
+        return
+    }else if(status != "ok"){
+        response.json({
+            'status': 'failed',
+            'message': `Transaction Failed`
+        })
+    }else{
+        database[username].transaction.status=1; //transaction completed successfully
+        response.json({
+            'status': 'Success',
+        })
+    }
+})
+router.post('/transaction/verify', (request, response) => {
+    if(!request.body) {
+        response.json({
+            'status': 'failed',
+            'message': 'Request missing name or username field!'
+        })
+        return
+    }
+    console.log("In Verify: "+JSON.stringify(request.body));
+    let tranid = request.body.transactionId;
+    let username = request.session.username;
+    if(database[username].transaction.tranid != tranid) {
+        response.json({
+            'status': 'failed',
+            'message': `Invalid Transaction. Please Check!`
+        })
+        return
+    }else{
+        if(database[username].transaction.status != 1){
+            response.json({
+                'status': 'failed',
+                'message': `Transaction not completed!`
+            })
+            return
+        }
+        /*let requestdata = database[username].transaction.requestData;
+        let app = express();
+        app._router.handle(req, res, next)*/
+        //transaction completed successfully
+        response.json({
+            'status': 'Success',
+        })
+    }
+})
 /* ---------- ROUTES END ---------- */
 
 module.exports = router;

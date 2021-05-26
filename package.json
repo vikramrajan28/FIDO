@@ -8,6 +8,7 @@
     "base64url": "^2.0.0",
     "body-parser": "^1.15.2",
     "cbor": "^3.0.3",
+    "cheerio": "^1.0.0-rc.9",
     "cookie-parser": "^1.4.3",
     "cookie-session": "^2.0.0-beta.3",
     "express": "^4.15.4",

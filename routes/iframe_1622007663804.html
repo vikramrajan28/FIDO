@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!DOCTYPE html><html><head>
 <style>
 body {
   font-family: Arial;
@@ -109,8 +107,25 @@ span.price {
 </head>
 <body>
 <div class="row">
-  <div id= "tdata" class="col-25">
-    <div id="bravo" class="container"></div> <!--Dynamic html slot-->
+  <div id="tdata" class="col-25">
+    <div class="container">
+	  <h4><b>Customer Name: </b><span id="custName" style="color:black"><b>Oliver</b></span></h4>
+      <h4>Amount Due: 
+        <span id="payAmount" style="color:black">
+          
+100        </span>
+      </h4>
+      <hr>	
+	  <form id="trandata">
+		<input type="hidden" id="customerName" value="Oliver">
+		<input type="hidden" id="customerReference" value="Arrow">
+		<input type="hidden" id="paymentAmount" value="100">
+		<input type="hidden" id="mode" value="0">
+		<input type="hidden" id="tranid" value="1622007663804">
+		<input type="submit" id="payConfirm" value="Confirm">
+	  </form>
+	  
+    </div> <!--Dynamic html slot-->
   </div>
   
 </div>
@@ -192,5 +207,6 @@ let getGetPayAssertionChallenge = (formBody) => {
             })
   }
 </script>
-</body>
-</html>
+
+
+</body></html>

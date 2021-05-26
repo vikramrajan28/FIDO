@@ -147,7 +147,8 @@
 		navigator.serviceWorker.addEventListener('message', event => {
 		  console.log(event.data.msg, event.data.url, event.data.data);
 		  if(event.data.msg==="FIDO_INIT_IFRAME"){
-				let url = event.data.data;
+				let url = event.data.data.url;
+				alert(url);
 				openPayment(url);
 				// loaddetails(data);
 		  }

@@ -32,9 +32,29 @@ let randomBase64URLBuffer = (len) => {
     len = len || 32;
 
     let buff = crypto.randomBytes(len);
-
     return base64url(buff);
 }
+/*---Hashing for transaction data*/
+let transHashBuffer = (transactdata) => {
+
+    let thash = crypto.createHash('md5').update(transactdata).digest('hex');
+    return base64url(thash);
+}
+let generateServerPayAssertion = (authenticators, tranhash) => {
+    let allowCredentials = [];
+    for(let authr of authenticators) {
+        allowCredentials.push({
+            type: 'public-key',
+            id: authr.credID,
+            transports: ['usb', 'nfc', 'ble']
+        })
+    }
+    return {
+        challenge: tranhash,
+        allowCredentials: allowCredentials
+    }
+}
+/*---Hash end--*/
 
 /**
  * Generates makeCredentials request
@@ -356,5 +376,7 @@ module.exports = {
     generateServerMakeCredRequest,
     generateServerGetAssertion,
     verifyAuthenticatorAttestationResponse,
-    verifyAuthenticatorAssertionResponse
+    verifyAuthenticatorAssertionResponse,
+    transHashBuffer,//new
+    generateServerPayAssertion//new
 }

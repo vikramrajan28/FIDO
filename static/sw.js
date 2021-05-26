@@ -1,3 +1,4 @@
+let transid = 0;
 self.addEventListener('fetch', function(event) {
 	console.log("SW URL : "+ event.request.url);
 	var url = event.request.url.split('/');
@@ -6,9 +7,8 @@ self.addEventListener('fetch', function(event) {
 			sendRequestToFIDOServer(event)
 				.then(data => sendIframeInitToMainFrame(event,data))
 				.then(()=> waitForIframeAuthentication())
-				.then(()=>verifyFIDOAuthentication())
-				.then((body)=>buildFetchResponse(body))
-
+				.then(()=>verifyFIDOAuthentication(transid))
+				.then((body)=>buildFetchResponse(body,event))
 
 			// sendInfoToBrowser(event)
 			// 	.then(waitForIframeAuthentication)
@@ -18,7 +18,6 @@ self.addEventListener('fetch', function(event) {
 		event.respondWith(
 			fetch(event.request));
 	}
-  
 });
 
 async function sendRequestToFIDOServer(event){
@@ -28,7 +27,7 @@ async function sendRequestToFIDOServer(event){
 	return fetchcritical(event.request)
 		.then((data) => {
 			console.log(data)
-			return fetch('http://localhost:3000/webauthn/transaction', {
+			return fetch('http://localhost:3000/webauthn/transaction/init', {
 				method: 'POST',
 				credentials: 'include',
 				headers: {
@@ -38,10 +37,11 @@ async function sendRequestToFIDOServer(event){
 				body: data
 			}).then((response) => response.json())
 				.then((response) => {
-					if(!response.tranid ) {
+					if(!response.url ) {
 						console.info("Error Occured");
 						throw new Error(`Server responed with error. The message is: ${response.message}`);
 					}
+					transid=response.tranid;
 					return response
 				});
 		});
@@ -49,7 +49,6 @@ async function sendRequestToFIDOServer(event){
 	//let url = "http://localhost:3000/webauthn/transaction/1234/iframe.html"
 	//return Promise.resolve(url)
 }
-
 
 async function sendIframeInitToMainFrame(event,data){
 	return sendMessageToMainFrame(event,"FIDO_INIT_IFRAME",data)
@@ -59,21 +58,41 @@ async function waitForIframeAuthentication(){
 	// Check if iframe from main page sent complete message
 	// Sleep in loop and check if the mainframe sent a message about closing
 	console.log("No answer from iframe sleeping")
-	return sleep(10000)
+	return sleep(60000)
 }
 
 async function verifyFIDOAuthentication(transactionId){
 	// Call FIDO server to check if FIDO verification was completed
+	console.log("Transaction ID for verification: "+transactionId);
+	return fetch('http://localhost:3000/webauthn/transaction/verify', {
+		method: 'POST',
+		credentials: 'include',
+		headers: {
+			'Accept': 'application/json',
+			'Content-Type': 'application/json'
+		},
+		body: {transactionId}
+	}).then((response) => response.json())
+		.then((response) => {
+			if(!response.status ) {
+				console.info("Error Occured");
+				throw new Error(`Server responed with error. The message is: ${response.message}`);
+			}
+			return response
+		});
 	// If yes FIDO server should execute call ot backend and return the body response to you
 	// If false FIDO server returns error status
-	return Promise.resolve({data:"mock data from response"})
+	//return Promise.resolve({data:"mock data from response"})
 }
 
-async function buildFetchResponse(body){
-	let response = new Response(JSON.stringify(body), {
-		headers: {'Content-Type': 'application/json'}
-	});
-	return Promise.resolve(response)
+async function buildFetchResponse(body,event){
+	if(!body.status == "Success") {
+		console.info("Error Occured");
+		throw new Error(`Server responed with Error. The message is: ${response.message}`);
+	}else{
+		return fetch(event.request);
+	}
+
 }
 
 async function sendMessageToMainFrame(event, type, data){
@@ -122,7 +141,7 @@ function fidoProcess(event){
 }
 function fetchcritical(request){
 	return request.json().then(data => {
-		console.log("SW c : "+data.customerName);
+		console.log("SW request data : "+JSON.stringify(data));
 
 		var payment = {
 			url: "card.html",
@@ -132,7 +151,8 @@ function fetchcritical(request){
 			customerName: data.customerName, 
 			customerReference: data.customerReference, 
 			paymentAmount: data.paymentAmount 
-		}; 
+		};
+		console.log("SW pay data : "+JSON.stringify(payment));
 		return JSON.stringify(payment);
 	});	
 	

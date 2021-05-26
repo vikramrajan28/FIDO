@@ -24,7 +24,7 @@ function openPayment(url) {
         .attr('frameborder', '0')
         .attr('scrolling', 'auto')
         .addClass('hide')
-        .attr('srcdoc', url);//ajax
+        .attr('src', url);//ajax
 
     $(frame).on('load', function () {
         $('.zp-status').hide();

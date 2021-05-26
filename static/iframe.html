@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!DOCTYPE html><html><head>
 <style>
 body {
   font-family: Arial;
@@ -109,8 +107,24 @@ span.price {
 </head>
 <body>
 <div class="row">
-  <div id= "tdata" class="col-25">
-    <div id="bravo" class="container"></div> <!--Dynamic html slot-->
+  <div id="tdata" class="col-25">
+    <div class="container">
+	  <h4><b>Customer Name: </b><span id="custName" style="color:black"><b>Oliver</b></span></h4>
+      <h4>Amount Due: 
+        <span id="payAmount" style="color:black">
+          
+100        </span>
+      </h4>
+      <hr>	
+	  <form id="trandata">
+		<input type="hidden" id="customerName" value="Oliver">
+		<input type="hidden" id="customerReference" value="Arrow">
+		<input type="hidden" id="paymentAmount" value="100">
+		<input type="hidden" id="mode" value="0">
+		<input type="submit" id="payConfirm" value="Confirm">
+	  </form>
+	  
+    </div> <!--Dynamic html slot-->
   </div>
   
 </div>
@@ -120,14 +134,21 @@ span.price {
 <script src="/js/webauthn.auth.js"></script>
 <script>
 
+/*function loaddata(options){
+		document.getElementById("customerName").value=options.customerName;
+		document.getElementById("customerReference").value=options.customerReference;
+		document.getElementById("paymentAmount").value=options.paymentAmount;
+		document.getElementById("mode").value=options.mode;
+		document.getElementById("custName").textContent=options.customerName;
+		document.getElementById("payAmount").textContent=options.paymentAmount;
+}*/
 
-  $('#trandata').submit(function (event) {
+$('#trandata').submit(function (event) {
     alert("Hi");
     event.preventDefault();
     let customerName = this.customerName.value;
     let customerReference = this.customerReference.value;
     let paymentAmount = this.paymentAmount.value;
-    let tranid = this.tranid.value;
     let mode = this.mode.value;
 
     if (!paymentAmount) {
@@ -148,8 +169,7 @@ span.price {
         })
         .then((response) => {
             if (response.status === 'ok') {
-              let stats = response.status;
-              commToFidoAfterVerfication({tranid,stats})
+                loadMainContainer()
             } else {
                 alert(`Server responed with error. The message is: ${response.message}`);
             }
@@ -174,23 +194,7 @@ let getGetPayAssertionChallenge = (formBody) => {
             return response
         })
 }
-  let commToFidoAfterVerfication = (obj) => {
-    return fetch('/webauthn/fidoUpdate', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(obj)
-    })
-            .then((response) => response.json())
-            .then((response) => {
-              if(response.status !== 'Success')
-                throw new Error(`Server responed with error. The message is: ${response.message}`);
-
-              return response
-            })
-  }
 </script>
-</body>
-</html>
+
+
+</body></html>
