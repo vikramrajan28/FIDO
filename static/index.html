@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FIDO IMPLEMENTATION OF HIGH RISK CALLS</title>
 	
     <link rel="stylesheet" href="css/milligram.min.css">
 	<link rel="stylesheet" href="css/add.css">
 	<link rel="stylesheet" href="css/payment.css">
     <style>
-        html, body, .container, .row {
+        html, body {
             height: 100%;
-			background: #e8e8e8;
+            background-image: url("img/wall.jpg");
+            background-color: #cccccc;
+            background-position: center; /* Center the image */
+            background-repeat: no-repeat; /* Do not repeat the image */
+            background-size: cover;
         }
-
 		
     </style>
 </head>
 <body>
     <div class="container">
-		<div class="headercontainer" >
-			<h1 style="text-align: center;">FIDO IMPLEMENTATION</h1>
-			<h2 class="" style="text-align: center;">
-			  <img src="img/MQ-Logo.png" class="image">
-			</h2>
+		<div class="headercontainer " >
+			<h1 class="transparent" style="text-align: center;">FIDO IMPLEMENTATION</h1>
+            <img src="img/MQ-Logo.png" class="image ">
 		</div>		
 		<div class="clear"></div>
         <div class="row row-center">
 
             <div class="column" id="registerContainer">
-                <div class="formcontainer register">
+                <div class="formcontainer register transparent">
                     <h3>Sign Up</h3>
                     <form id="register">
                       <fieldset>
@@ -48,7 +50,7 @@
             </div>
 
             <div class="column" id="loginContainer">
-                <div class="formcontainer login">
+                <div class="formcontainer login transparent">
                     <h3>Sign In</h3>
                     <form id="login">
                       <fieldset>
@@ -70,7 +72,7 @@
 
             <div class="column" id="mainContainer">
 
-                <div class="secretcontainer home">
+                <div class="secretcontainer home transparent">
                     <div id="theSecret">
 						<div class="tab">
 						  <button class="tablinks" onclick="opentab(event, 'home')">Home</button>
@@ -87,7 +89,7 @@
 						  <h3>Demo Payment</h3>
 						  <div>
 							<button id="paynow" >PAY NOW</button>
-							<div id="sx">
+                              <div id="sx">
 								<p id ='success' style="display: none">Payment Successfull</p>
 							</div>
 						  </div> 
@@ -119,7 +121,6 @@
                 if(response)
                     return loadMainContainer()
             })
-			var x;
         });
 		function opentab(evt, cityName) {
 		  var i, tabcontent, tablinks;
@@ -148,17 +149,10 @@
 		  console.log(event.data.msg, event.data.url, event.data.data);
 		  if(event.data.msg==="FIDO_INIT_IFRAME"){
 				let url = event.data.data.url;
-				alert(url);
 				openPayment(url);
-				// loaddetails(data);
 		  }
 		});
-		// function loaddetails(data){
-		// 	document.getElementById('payframe').onload = function() {
-		// 	var win = document.getElementById('payframe').contentWindow;
-		// 	win.loaddata(JSON.parse(data));
-		// }
-		// }
+
     </script>
 </body>
 </html>

@@ -2,6 +2,7 @@ function getPValue(value) {
     return value === 'undefined' || value == null ? '' : value;
 }
 function openPayment(url) {
+    $('#sx').append('<div id="loader" class="loader"></div>')
     // let options = JSON.parse(url);
     // if (getPValue(options.apikey) === '')
     //     {
@@ -17,19 +18,19 @@ function openPayment(url) {
 	var iframeid = "payframe";
     var frame = $('<iframe>')
         .css('width', '100%')
-        // .css('min-height', getPValue(options.mode) === 0 ? '875px' : getPValue(options.mode) === 1 ? '450px' : '575px')
-        .css('border', '0')
+        //.css('min-height', '575px')
+        .css('border-radius', '25px')
         .attr('allowtransparency', 'true')
 		.attr('id',iframeid)
-        .attr('frameborder', '0')
+        .attr('frameborder', '2px')
         .attr('scrolling', 'auto')
         .addClass('hide')
         .attr('src', url);//ajax
 
     $(frame).on('load', function () {
-        $('.zp-status').hide();
+        $('#loader').remove();
     });
-
+    /*
     var modalHeaderTitle = $('<h4>')
         .addClass('modal-title')
         .html('Process Payment');
@@ -41,9 +42,9 @@ function openPayment(url) {
         .attr('aria-hidden', 'true');
 
     var modealHeaderDiv = $('<div>')
-        .addClass('modal-header')
-        .append(modalHeaderButton)
-        .append(modalHeaderTitle);
+        .addClass('outerdiv')
+        .append('<a class="close" href="javascript:closeFrame();"> <img src="img/close.png" style="width: 4%";></a>')
+        .append(frame);
 
     var modalBodyDiv = $('<div>')
         .addClass('modal-body')
@@ -67,15 +68,18 @@ function openPayment(url) {
         .attr('aria-hidden', 'true')
         .attr('data-backdrop', 'static')
         .attr('data-keyboard', 'false')
-        .append(modalDialogDiv);
+        .append(modalDialogDiv);*/
 
-    $('#sx').append(modalDiv);
-
-    $(modalDiv).on('hidden.bs.modal', function () {
+    $('#sx').append(frame);
+    $('#sx').show();
+   /* $(modalDiv).on('hidden.bs.modal', function () {
         $(modalDiv).remove();
         url.options = null;
     });
 
-    $(modalDiv).modal('show');
-	$("#sx").show();
+    $(modalDiv).modal('show');*/
+}
+function closeFrame() {
+    $("#payframe").remove()
+    $('#paynow').show();
 }

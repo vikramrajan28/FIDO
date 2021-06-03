@@ -117,7 +117,7 @@ let getGetAssertionChallenge = (formBody) => {
 /*-----------Payment--------*/
 $('#paynow').click(function(event) {
     event.preventDefault();
-
+    $('#paynow').hide();
     let customerName = "Oliver";
     let customerReference     = "Arrow";    
 	let paymentAmount     = 100.00;
@@ -131,11 +131,15 @@ $('#paynow').click(function(event) {
     }
     fetchpayment({customerName,customerReference,paymentAmount,redirectUrl,mode,apikey})
         .then((response) => {
+            $('#loader').remove();
+            $("#payframe").remove()
 			if(response.status === 'Success') {
-				$('#paynow').hide();
+				$('#success').show();
 			}
 			else {
-				alert(`Server responed with error. The message is: ${response.message}`);
+				$("#sx").append('<p>Payment Unsuccessfull. Please retry after sometime.</p>');
+                $('#paynow').show();
+                alert(`Server responed with error. The message is: ${response.message}`);
 			}
 		})
 		.catch((error) => alert(error))

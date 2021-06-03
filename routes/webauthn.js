@@ -6,7 +6,9 @@ const router    = express.Router();
 const database  = require('./db');
 const path  = require('path');
 const fs = require('fs');
-
+const Mustache = require('mustache');
+const axios = require('axios');
+const CircularJSON = require('circular-json');
 
 /* ---------- ROUTES START ---------- */
 
@@ -232,41 +234,16 @@ router.get('/transaction/:id/card.html', (request, response) => {    // Get data
     let tranid =request.params.id;
     let trandata = database[username].transaction
     if (tranid != trandata.tranid) return
-    let customerName = trandata.customerName;
-    let customerReference     = trandata.customerReference;
-    let paymentAmount     = trandata.paymentAmount;
-    //let redirectUrl     = request.body.redirectUrl;
-    let mode     = trandata.mode;
-        /*Html Rendering*/
-    let htmldata = '<div class="container">\n' +
-        '\t  <h4><b>Customer Name: </b><span id="custName" style="color:black"><b>'+customerName+'</b></span></h4>\n' +
-        '      <h4>Amount Due: \n' +
-        '        <span id="payAmount" style="color:black">\n' +
-        '          \n' +paymentAmount+
-        '        </span>\n' +
-        '      </h4>\n' +
-        '      <hr>\t\n' +
-        '\t  <form id ="trandata" >\n' +
-        '\t\t<input type="hidden" id="customerName" value="'+customerName+'">\n' +
-        '\t\t<input type="hidden" id="customerReference" value="'+customerReference+'">\n' +
-        '\t\t<input type="hidden" id="paymentAmount" value="'+paymentAmount+'">\n' +
-        '\t\t<input type="hidden" id="mode" value="'+mode+'">\n' +
-        '\t\t<input type="hidden" id="tranid" value="'+tranid+'">\n' +
-        '\t\t<input type="submit" id="payConfirm" value="Confirm">\n' +
-        '\t  </form>\n' +
-        '\t  \n' +
-        '    </div>';
+
     fs.readFile('./static/card.html', function read(err, data) {
         if (err) {
             throw err;
         }
         let $ = require('cheerio').load(data);
-        $('#bravo').replaceWith(htmldata);
-        fs.writeFile('routes/iframe_'+tranid+'.html', $.html(), function (err) {
-            if (err) return console.log(err);
-            console.log('Content > iframe.html');
-            response.sendFile(path.join(__dirname + '/iframe_'+tranid+'.html'));
-        });
+        let rendered = Mustache.render($.html(),trandata );
+        //$('#bravo').replaceWith(htmldata);
+        console.log('Content > iframe.html');
+        response.send(rendered);
     });
     // Modify card.html with the data (you need to change card.html to be a simple template that you can modify dynamically)
     // And you send html back
@@ -293,12 +270,14 @@ router.post('/transaction/init', (request, response) => {
         return
     }
     let verified =true;
-    let customerName = request.body.customerName;
-    let customerReference     = request.body.customerReference;
-    let paymentAmount     = request.body.paymentAmount;
-    let redirectUrl     = request.body.redirectUrl;
+    let customerName = request.body.requestData.customerName;
+    let customerReference     = request.body.requestData.customerReference;
+    let paymentAmount     = request.body.requestData.paymentAmount;
     let mode     = request.body.mode;
+    /* ---Additional variables if required
+    let redirectUrl     = request.body.redirectUrl;
     let apikey     = request.body.apikey;
+    */
     let tranid  = Date.now()
     let stat = 0;
     console.info("Payment : "+ customerName + " Transact ID: "+ tranid);
@@ -310,7 +289,8 @@ router.post('/transaction/init', (request, response) => {
         'mode': mode,
         'paymentAmount':paymentAmount,
         'status':stat,
-        'requestData':request.body
+        'url':request.body.url,
+        'requestData':request.body.requestData
     }
     // And transactionId is returned
     if(!verified) {
@@ -355,6 +335,7 @@ router.post('/fidoUpdate', (request, response) => {
         database[username].transaction.status=1; //transaction completed successfully
         response.json({
             'status': 'Success',
+            'tranid':tranid
         })
     }
 })
@@ -383,15 +364,36 @@ router.post('/transaction/verify', (request, response) => {
             })
             return
         }
-        /*let requestdata = database[username].transaction.requestData;
-        let app = express();
-        app._router.handle(req, res, next)*/
+        let requestdata = database[username].transaction.requestData;
+        let url = database[username].transaction.url;// Original event URL
+        console.log("Responding Before : "+url)
+        return axios.post(url, requestdata)
+            .then((resp)=> {
+                let res = resp.data;
+                console.log("Verification Response: "+CircularJSON.stringify(res));
+                response.json(res);
+                console.log("Just : "+res);
+                return
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        //console.log("Responding with : "+res.status)
         //transaction completed successfully
-        response.json({
-            'status': 'Success',
-        })
     }
 })
+
+function redirectToOrigin(url, requestdata){
+    return axios.post(url, requestdata)
+        .then((resp)=> {
+            let res = resp.data;
+            console.log("Verification Response: "+CircularJSON.stringify(res));
+            return res
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+}
 /* ---------- ROUTES END ---------- */
 
 module.exports = router;

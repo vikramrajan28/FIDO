@@ -1,13 +1,21 @@
+let flag = 0;
+self.addEventListener('message', event => {
+	// event is an ExtendableMessageEvent object
+	console.log(`The client sent me a message: ${event.data}`);
+	//let transid = event.data.tranid;
+	flag = 1;
+});
 let transid = 0;
 self.addEventListener('fetch', function(event) {
 	console.log("SW URL : "+ event.request.url);
 	var url = event.request.url.split('/');
+
 	if(url.includes("payment")){
 		event.respondWith(
 			sendRequestToFIDOServer(event)
 				.then(data => sendIframeInitToMainFrame(event,data))
 				.then(()=> waitForIframeAuthentication())
-				.then(()=>verifyFIDOAuthentication(transid))
+				.then((res)=>verifyFIDOAuthentication(transid,res))
 				.then((body)=>buildFetchResponse(body,event))
 
 			// sendInfoToBrowser(event)
@@ -57,11 +65,37 @@ async function sendIframeInitToMainFrame(event,data){
 async function waitForIframeAuthentication(){
 	// Check if iframe from main page sent complete message
 	// Sleep in loop and check if the mainframe sent a message about closing
-	console.log("No answer from iframe sleeping")
-	return sleep(60000)
+	let result = await flagCheck();
+	if(result){
+		return {status:"Success"};
+	}else{
+		console.log("No answer from iframe sleeping")
+		return {status:"Fail",message:"Timed Out!"}
+	}
+
+}
+let c= 0;
+async function flagCheck(){
+	if(flag == 0) {
+		await sleep(2000);
+		c=c+1;
+		console.log("Counter "+c);
+		if(c>30){
+			c=0;
+			return false;
+		}
+		await flagCheck();
+		/* this checks the flag every 100 milliseconds*/
+	} else {
+		flag = 0;
+	}
+	return true
 }
 
-async function verifyFIDOAuthentication(transactionId){
+async function verifyFIDOAuthentication(transactionId,res){
+	if(!res.status == "Success"){
+		throw new Error(`Server responed with error. The message is: TIMEOUT`);
+	}
 	// Call FIDO server to check if FIDO verification was completed
 	console.log("Transaction ID for verification: "+transactionId);
 	return fetch('http://localhost:3000/webauthn/transaction/verify', {
@@ -71,13 +105,14 @@ async function verifyFIDOAuthentication(transactionId){
 			'Accept': 'application/json',
 			'Content-Type': 'application/json'
 		},
-		body: {transactionId}
+		body:  JSON.stringify({transactionId})
 	}).then((response) => response.json())
 		.then((response) => {
 			if(!response.status ) {
-				console.info("Error Occured");
+				console.info("Error Occured ");
 				throw new Error(`Server responed with error. The message is: ${response.message}`);
 			}
+			console.info("Resp Occured");
 			return response
 		});
 	// If yes FIDO server should execute call ot backend and return the body response to you
@@ -90,7 +125,7 @@ async function buildFetchResponse(body,event){
 		console.info("Error Occured");
 		throw new Error(`Server responed with Error. The message is: ${response.message}`);
 	}else{
-		return fetch(event.request);
+		return new Response(JSON.stringify(body));
 	}
 
 }
@@ -144,13 +179,8 @@ function fetchcritical(request){
 		console.log("SW request data : "+JSON.stringify(data));
 
 		var payment = {
-			url: "card.html",
-			apikey: data.apikey,
-			redirectUrl: data.redirectUrl, 
-			mode: data.mode,
-			customerName: data.customerName, 
-			customerReference: data.customerReference, 
-			paymentAmount: data.paymentAmount 
+			url: request.url,
+			requestData: data
 		};
 		console.log("SW pay data : "+JSON.stringify(payment));
 		return JSON.stringify(payment);

@@ -37,7 +37,7 @@ let randomBase64URLBuffer = (len) => {
 /*---Hashing for transaction data*/
 let transHashBuffer = (transactdata) => {
 
-    let thash = crypto.createHash('md5').update(transactdata).digest('hex');
+    let thash = crypto.createHash('SHA256').update(transactdata).digest('hex');
     return base64url(thash);
 }
 let generateServerPayAssertion = (authenticators, tranhash) => {
